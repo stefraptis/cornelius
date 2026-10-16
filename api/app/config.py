@@ -32,8 +32,8 @@ class Settings(BaseSettings):
 
     # Supabase
     supabase_url: str = "http://localhost:54321"
-    supabase_anon_key: str = ""
-    supabase_service_role_key: str = ""
+    supabase_publishable_key: str = ""  # or the legacy anon key
+    supabase_secret_key: str = ""  # or the legacy service_role key; server only
     supabase_jwt_secret: str = ""  # legacy HS256 secret; when empty, JWKS (asymmetric) is used
     database_url: str = "postgresql://postgres:postgres@127.0.0.1:54329/cornelius"
 

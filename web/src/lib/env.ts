@@ -15,9 +15,11 @@ export const env = {
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     "http://localhost:54321",
   ),
+  // New Supabase projects issue a publishable key (sb_publishable_...); older
+  // ones an anon JWT. Either works here and both are safe in the browser.
   supabaseAnonKey: required(
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     "anon-key-not-set",
   ),
   apiBaseUrl: process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000",
