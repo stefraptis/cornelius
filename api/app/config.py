@@ -20,7 +20,9 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         # Later files override earlier ones. local.env exists for tooling that
         # cannot write dotfiles; it is git-ignored like .env.
-        env_file=(REPO_ROOT / ".env", REPO_ROOT / "local.env", Path(".env")),
+        # Later files win. local.env (git-ignored) is always last so it overrides
+        # whatever cwd the process was started from.
+        env_file=(REPO_ROOT / ".env", Path(".env"), REPO_ROOT / "local.env"),
         env_file_encoding="utf-8",
         extra="ignore",
     )
