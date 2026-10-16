@@ -73,7 +73,8 @@ class JobLoop:
                 """
                 update public.jobs
                 set status = %s, error = %s, locked_by = null, locked_at = null,
-                    run_after = case when %s then now() + make_interval(secs => %s) else run_after end,
+                    run_after = case when %s then now() + make_interval(secs => %s)
+                                else run_after end,
                     finished_at = case when %s then null else now() end
                 where id = %s
                 """,
@@ -81,7 +82,8 @@ class JobLoop:
             )
             return
         conn.execute(
-            "update public.jobs set status = 'succeeded', finished_at = now(), locked_by = null where id = %s",
+            "update public.jobs set status = 'succeeded', finished_at = now(), locked_by = null "
+            "where id = %s",
             (job_id,),
         )
         log.info("job.done id=%s", job_id)

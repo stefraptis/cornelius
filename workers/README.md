@@ -13,4 +13,14 @@ never through the API.
 and the storage client, which is the API's `storage.py` installed as a
 package so there is exactly one place that talks to object storage.
 
-Each worker is a Docker image. Run locally with `docker compose up transcode`.
+Each worker is a Docker image. Run locally with `docker compose up transcode`,
+or without Docker from the repository root (ffmpeg must be on PATH):
+
+```
+pip install -e "api[workers]"
+python -m workers.transcode.main
+```
+
+Transcode settings (environment): `ORIGINAL_RETENTION_DAYS` (default 90) and
+the out-of-body thresholds `OOB_MIN_RED_DOMINANCE`, `OOB_MAX_BRIGHTNESS`,
+`OOB_MIN_SATURATION`, `OOB_MIN_RUN_S`, `OOB_PAD_S`.

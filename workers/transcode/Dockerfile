@@ -3,7 +3,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg && rm -r
 WORKDIR /app
 COPY api/pyproject.toml api/pyproject.toml
 COPY api/app api/app
-RUN pip install --no-cache-dir ./api
+RUN pip install --no-cache-dir './api[workers]'
 COPY workers workers
 ENV PYTHONUNBUFFERED=1
 USER nobody

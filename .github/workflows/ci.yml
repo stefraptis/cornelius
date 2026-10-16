@@ -25,11 +25,10 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-      - run: pip install -e "api[dev]" requests
-      - run: ruff check api && ruff format --check api
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+      - run: pip install -e "api[dev,workers]" requests
+      - run: ruff check api workers && ruff format --check api workers
       - run: python -m pytest api -q
-      - run: python -m pytest workers -q || true
-        if: ${{ hashFiles('workers/**/test_*.py') != '' }}
 
   web:
     name: Web lint, types, tests, build
