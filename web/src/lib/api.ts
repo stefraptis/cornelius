@@ -39,6 +39,41 @@ export type Me = {
   workspaces: Workspace[];
   teams: { team_id: string; team_name: string; org_id: string | null; role: string }[];
   organizations: { org_id: string; org_name: string; role: string }[];
+  platform_admin: boolean;
+};
+
+export type FeedbackCategory = "bug" | "idea" | "question" | "other";
+
+export type UsageEvent = {
+  event: string;
+  page?: string;
+  properties?: Record<string, string | number | boolean | null>;
+  duration_ms?: number;
+  session_id?: string;
+  at?: string;
+};
+
+export type UsageSummary = {
+  days: number;
+  total_users: number;
+  active_users: number;
+  total_events: number;
+  feedback_new: number;
+  daily: { day: string; events: number; users: number }[];
+  by_event: { event: string; events: number; users: number }[];
+  top_users: { user_id: string | null; full_name: string | null; events: number; last_seen: string | null }[];
+};
+
+export type FeedbackRow = {
+  id: string;
+  user_id: string | null;
+  full_name: string | null;
+  category: FeedbackCategory;
+  message: string;
+  page_url: string | null;
+  status: "new" | "seen" | "planned" | "done" | "closed";
+  admin_note: string | null;
+  created_at: string;
 };
 
 export type Label = { code: string; name: string; color: string; order: number };
@@ -98,4 +133,16 @@ export const api = {
   updateProfile: (token: string, changes: Partial<Pick<Profile, "full_name" | "title" | "specialty" | "locale">>) =>
     request<Profile>("/me/profile", token, { method: "PATCH", json: changes }),
   procedures: (token: string) => request<Procedure[]>("/procedures", token),
+  sendFeedback: (
+    token: string,
+    body: { category: FeedbackCategory; message: string; page_url?: string; app_version?: string },
+  ) => request<{ id: string }>("/feedback", token, { method: "POST", json: body }),
+  sendUsage: (token: string, events: UsageEvent[]) =>
+    request<{ accepted: number }>("/usage/events", token, { method: "POST", json: { events } }),
+  adminUsage: (token: string, days: number) => request<UsageSummary>(`/admin/usage?days=${days}`, token),
+  adminFeedback: (token: string) => request<FeedbackRow[]>("/admin/feedback", token),
+  adminUpdateFeedback: (token: string, id: string, changes: { status?: string; admin_note?: string }) =>
+    request<FeedbackRow>(`/admin/feedback/${id}`, token, { method: "PATCH", json: changes }),
 };
+
+export const APP_VERSION = "0.1.0";

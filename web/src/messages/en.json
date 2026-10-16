@@ -20,7 +20,8 @@
     "theme": "Theme",
     "themeLight": "Light",
     "themeDark": "Dark",
-    "themeSystem": "System"
+    "themeSystem": "System",
+    "admin": "Usage"
   },
   "auth": {
     "signIn": "Sign in",
@@ -144,5 +145,53 @@
   },
   "footer": {
     "disclaimer": "Events and analyses are for post-operative review, education, and research only. Not for real-time clinical guidance."
+  },
+  "feedback": {
+    "button": "Feedback",
+    "title": "Send feedback",
+    "description": "Tell us what broke, what is missing, or what you would change. The current page address and app version are attached.",
+    "category": "Type",
+    "categories": {
+      "bug": "Something is broken",
+      "idea": "Idea or request",
+      "question": "Question",
+      "other": "Other"
+    },
+    "message": "Message",
+    "messagePlaceholder": "What happened, and what did you expect?",
+    "send": "Send feedback",
+    "sent": "Thank you. Your feedback was recorded.",
+    "failed": "Could not send feedback. Try again."
+  },
+  "admin": {
+    "title": "Platform usage",
+    "intro": "Counts across all accounts for the last {days} days. First-party data only; nothing leaves the EU.",
+    "accounts": "Accounts",
+    "activeUsers": "Active users",
+    "events": "Events",
+    "newFeedback": "New feedback",
+    "daily": "Per day",
+    "day": "Day",
+    "users": "Users",
+    "byEvent": "By event",
+    "event": "Event",
+    "topUsers": "Most active",
+    "lastSeen": "Last seen",
+    "feedbackList": "Feedback",
+    "status": "Status",
+    "from": "From",
+    "when": "When",
+    "note": "Note",
+    "noFeedback": "No feedback yet.",
+    "range7": "7 days",
+    "range30": "30 days",
+    "range90": "90 days",
+    "statuses": {
+      "new": "New",
+      "seen": "Seen",
+      "planned": "Planned",
+      "done": "Done",
+      "closed": "Closed"
+    }
   }
 }

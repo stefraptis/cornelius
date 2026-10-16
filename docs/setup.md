@@ -11,7 +11,11 @@ The project is created in an EU region (Frankfurt). In the Supabase dashboard:
 3. **Authentication > Sign In / Providers > Email**: keep Email enabled, with "Confirm email" on. Password sign-in and magic links both use this provider.
 4. **Authentication > Multi-Factor**: enable TOTP (authenticator app).
 5. **Authentication > URL Configuration**: Site URL `http://localhost:3100` for now; add `http://localhost:3100/auth/callback` to Redirect URLs. Repeat with the real domain later.
-6. **SQL Editor**: run, in order, `supabase/migrations/0001_accounts.sql`, `0002_videos_analysis.sql`, `0003_rls.sql`, then `supabase/seed/procedures.sql`. Each file is one transaction; if one fails, nothing from it is applied. (With the Supabase CLI: `supabase link --project-ref <ref>` then `supabase db push` and `supabase db seed`.)
+6. **Migrations**: after `.env` is filled (next step), run from the `api` folder:
+   ```
+   python scripts/migrate.py
+   ```
+   It applies every pending file in `supabase/migrations/` in order, records them in `public.schema_migrations`, and re-runs the seeds. Run it again after every update that adds a migration. (Alternative: paste the files into the SQL Editor in order.)
 
 Then at the repository root:
 
@@ -48,7 +52,16 @@ pnpm dev                        # http://localhost:3100
 
 Sign up at http://localhost:3100/signup, confirm the email, sign in. Settings > Security sets up two-factor authentication.
 
-## 4. Tests
+## 4. Platform admin
+
+The usage page (`/admin/usage`) and the feedback inbox are visible only to accounts listed in `public.platform_admins`. Add yourself once, in the SQL Editor:
+
+```sql
+insert into public.platform_admins (user_id, note)
+select id, 'owner' from auth.users where email = 'you@example.org';
+```
+
+## 5. Tests
 
 ```bash
 cd api && pytest -q -m "not db"          # unit tests, no database needed

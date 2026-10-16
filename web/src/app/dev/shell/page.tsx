@@ -30,6 +30,7 @@ const SAMPLE_ME: Me = {
   ],
   teams: [{ team_id: "t1", team_name: "HPB unit", org_id: "o1", role: "surgeon" }],
   organizations: [{ org_id: "o1", org_name: "Sample Hospital", role: "member" }],
+  platform_admin: true,
 };
 
 const PHASES = [

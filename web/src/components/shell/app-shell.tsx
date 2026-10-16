@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Activity,
   BarChart3,
   ChevronsLeft,
   ChevronsRight,
@@ -14,8 +15,10 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { FeedbackButton } from "@/components/shell/feedback-button";
 import { Logo } from "@/components/shell/logo";
 import { ThemeToggle } from "@/components/shell/theme-toggle";
+import { UsageTracker } from "@/components/shell/usage-tracker";
 import { UserMenu } from "@/components/shell/user-menu";
 import { WorkspaceSwitcher } from "@/components/shell/workspace-switcher";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/primitives";
@@ -105,6 +108,19 @@ export function AppShell({
         </nav>
 
         <div className="flex flex-col gap-0.5 border-t border-border p-2">
+          {me?.platform_admin ? (
+            <Link
+              href="/admin/usage"
+              className={cn(
+                "flex h-9 items-center gap-3 rounded-control px-2.5 text-sm text-text-muted hover:bg-bg hover:text-text",
+                pathname.startsWith("/admin") && "bg-bg text-text font-medium",
+                collapsed && "justify-center px-0",
+              )}
+            >
+              <Activity className="size-4 shrink-0" aria-hidden />
+              {!collapsed ? t("nav.admin") : <span className="sr-only">{t("nav.admin")}</span>}
+            </Link>
+          ) : null}
           <Link
             href="/about-model"
             className={cn(
@@ -138,10 +154,12 @@ export function AppShell({
               API unavailable: {apiError}
             </span>
           ) : null}
+          <FeedbackButton />
           <ThemeToggle />
           <UserMenu name={displayName} email={email} secondFactor={me?.second_factor ?? false} />
         </header>
         <main className="mx-auto w-full max-w-[1440px] flex-1 px-6 py-6">{children}</main>
+        <UsageTracker />
         <footer className="border-t border-border px-6 py-3 text-xs text-text-muted">{t("footer.disclaimer")}</footer>
       </div>
     </div>

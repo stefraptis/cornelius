@@ -60,6 +60,7 @@ class Me(BaseModel):
     workspaces: list[Workspace]
     teams: list[TeamMembership]
     organizations: list[OrgMembership]
+    platform_admin: bool = False
 
 
 @router.get("", response_model=Me)
@@ -100,6 +101,9 @@ def get_me(request: Request, user: AuthUser = Depends(get_current_user)) -> Me:
         )
         teams = cur.fetchall()
 
+        cur.execute("select 1 from public.platform_admins where user_id = %s", (user.id,))
+        platform_admin = cur.fetchone() is not None
+
         cur.execute(
             """
             select m.org_id, o.name as org_name, m.role::text as role
@@ -131,6 +135,7 @@ def get_me(request: Request, user: AuthUser = Depends(get_current_user)) -> Me:
         workspaces=[Workspace(**w) for w in workspaces],
         teams=[TeamMembership(**t) for t in teams],
         organizations=[OrgMembership(**o) for o in orgs],
+        platform_admin=platform_admin,
     )
 
 
