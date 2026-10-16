@@ -11,6 +11,17 @@ log = logging.getLogger(__name__)
 router = APIRouter(tags=["health"])
 
 
+@router.get("/", include_in_schema=False)
+def root() -> dict[str, str]:
+    settings = get_settings()
+    return {
+        "app": settings.app_name,
+        "health": "/health",
+        "database": "/health/db",
+        "docs": "/docs" if not settings.is_production else "",
+    }
+
+
 @router.get("/health")
 def health() -> dict[str, str]:
     settings = get_settings()
