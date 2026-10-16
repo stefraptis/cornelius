@@ -15,11 +15,14 @@ export default function UpdatePasswordPage() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [touched, setTouched] = useState(false);
+  const tooShort = password.length < 10;
+  const lengthError = touched && tooShort ? t("auth.passwordHint") : null;
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
-    if (password.length < 10) {
-      setError(t("auth.passwordHint"));
+    if (tooShort) {
+      setTouched(true);
       return;
     }
     setBusy(true);
@@ -38,7 +41,12 @@ export default function UpdatePasswordPage() {
     <div>
       <h1 className="text-xl font-semibold tracking-tight">{t("auth.updatePassword")}</h1>
       <form onSubmit={submit} className="mt-6 flex flex-col gap-4" noValidate>
-        <Field label={t("auth.newPassword")} htmlFor="password" hint={t("auth.passwordHint")} error={error}>
+        <Field
+          label={t("auth.newPassword")}
+          htmlFor="password"
+          hint={`${t("auth.passwordHint")} ${password.length}/10`}
+          error={lengthError ?? error}
+        >
           <Input
             id="password"
             type="password"
@@ -46,7 +54,12 @@ export default function UpdatePasswordPage() {
             required
             minLength={10}
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              setError(null);
+            }}
+            onBlur={() => setTouched(true)}
+            aria-invalid={lengthError || error ? true : undefined}
           />
         </Field>
         <Button type="submit" loading={busy} className="mt-2 w-full">

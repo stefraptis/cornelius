@@ -20,12 +20,18 @@ export function SignupForm() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
+
+  // Validated live: the message appears once the field has been used and
+  // disappears the moment the password is long enough.
+  const passwordTooShort = password.length < MIN_PASSWORD;
+  const passwordError = passwordTouched && passwordTooShort ? t("auth.passwordHint") : null;
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     setError(null);
-    if (password.length < MIN_PASSWORD) {
-      setError(t("auth.passwordHint"));
+    if (passwordTooShort) {
+      setPasswordTouched(true);
       return;
     }
     setBusy(true);
@@ -88,7 +94,12 @@ export function SignupForm() {
             onChange={(e) => setEmail(e.target.value)}
           />
         </Field>
-        <Field label={t("auth.password")} htmlFor="password" hint={t("auth.passwordHint")} error={error}>
+        <Field
+          label={t("auth.password")}
+          htmlFor="password"
+          hint={`${t("auth.passwordHint")} ${password.length}/${MIN_PASSWORD}`}
+          error={passwordError ?? error}
+        >
           <Input
             id="password"
             type="password"
@@ -96,8 +107,12 @@ export function SignupForm() {
             required
             minLength={MIN_PASSWORD}
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            aria-invalid={error ? true : undefined}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              setError(null);
+            }}
+            onBlur={() => setPasswordTouched(true)}
+            aria-invalid={passwordError || error ? true : undefined}
           />
         </Field>
         <Button type="submit" loading={busy} className="mt-2 w-full">

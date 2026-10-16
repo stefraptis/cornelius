@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { ThemeProvider } from "next-themes";
+import Script from "next/script";
 import { Toaster } from "sonner";
 
 import "@fontsource/ibm-plex-sans/400.css";
@@ -9,6 +9,7 @@ import "@fontsource/ibm-plex-mono/400.css";
 import "@fontsource/ibm-plex-mono/500.css";
 import "./globals.css";
 
+import { ThemeProvider, themeInitScript } from "@/components/shell/theme-provider";
 import { TooltipProvider } from "@/components/ui/primitives";
 import { t } from "@/lib/i18n";
 
@@ -32,8 +33,17 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Applies the saved theme before first paint. A Next Script with
+            beforeInteractive is injected by the framework, not rendered by
+            React on the client, so it never triggers the script-in-component
+            warning. */}
+        <Script id="theme-init" strategy="beforeInteractive">
+          {themeInitScript}
+        </Script>
+      </head>
       <body className="min-h-dvh">
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <ThemeProvider>
           <TooltipProvider delayDuration={300}>{children}</TooltipProvider>
           <Toaster
             position="bottom-right"
