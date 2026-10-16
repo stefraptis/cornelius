@@ -243,6 +243,26 @@ def test_playback_before_transcode_and_after(
         ).fetchone()["n"]
     assert est["bytes_estimated"] == int(1200 * 2_000_000 / 8) and views == 1
 
+    # Safari path: the token in the query string works for playlists only.
+    qt = make_token(users["alice"])
+    master_q = client.get(f"/videos/{vid}/stream.m3u8?access_token={qt}")
+    assert master_q.status_code == 200 and f"720p.m3u8?access_token={qt}" in master_q.text
+    assert client.get(f"/videos/{vid}/stream/720p.m3u8?access_token={qt}").status_code == 200
+    assert client.get(f"/videos/{vid}?access_token={qt}").status_code == 401
+
+    storage.put_bytes(
+        Keys.thumbs_prefix(vid) + "sprite.json",
+        b'{"interval_s": 10, "count": 3}',
+        "application/json",
+    )
+    with as_service(settings.database_url) as conn:
+        conn.execute(
+            "update public.videos set sprite_key = %s where id = %s", (Keys.sprite(vid), vid)
+        )
+        conn.commit()
+    assert client.get(f"/videos/{vid}/sprite-index", headers=a).json()["count"] == 3
+    assert client.get(f"/videos/{vid}/sprite-index", headers=auth(users["bob"])).status_code == 404
+
     poster = client.get(f"/videos/{vid}/assets/poster", headers=a).json()["url"]
     assert "X-Amz-Signature" in poster
     assert (

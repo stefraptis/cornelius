@@ -157,6 +157,33 @@ def get_current_user(
     return user
 
 
+def get_current_user_or_query_token(
+    request: Request,
+    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
+    verifier: TokenVerifier = Depends(get_verifier),
+) -> AuthUser:
+    """Like get_current_user, but also accepts ?access_token= for streaming.
+
+    Native HLS players (Safari) cannot attach headers to playlist requests.
+    Only the playlist endpoints use this dependency; the token still expires
+    and the URL is never logged with its query string.
+    """
+    token = (
+        credentials.credentials if credentials and credentials.scheme.lower() == "bearer" else None
+    )
+    if not token:
+        token = request.query_params.get("access_token")
+    if not token:
+        raise HTTPException(
+            status.HTTP_401_UNAUTHORIZED,
+            "Sign in to continue",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    user = verifier.verify(token)
+    request.state.user = user
+    return user
+
+
 def require_second_factor(user: AuthUser = Depends(get_current_user)) -> AuthUser:
     """For admin actions: the session must have completed a second factor."""
     if not user.has_second_factor:

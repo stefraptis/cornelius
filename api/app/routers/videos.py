@@ -17,7 +17,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response,
 from pydantic import BaseModel, Field
 
 from app import audit, db
-from app.auth import AuthUser, get_current_user
+from app.auth import AuthUser, get_current_user, get_current_user_or_query_token
 from app.config import get_settings
 from app.storage import CompletedPart, Keys, Storage, get_storage
 
@@ -491,7 +491,7 @@ def delete_video(
 def master_playlist(
     video_id: uuid.UUID,
     request: Request,
-    user: AuthUser = Depends(get_current_user),
+    user: AuthUser = Depends(get_current_user_or_query_token),
     storage: Storage = Depends(get_storage),
 ) -> Response:
     """Master playlist with the renditions, each pointing at the API sub-playlist."""
@@ -508,11 +508,13 @@ def master_playlist(
         raise HTTPException(status.HTTP_409_CONFLICT, "Video is still processing")
     text = storage.get_bytes(row["hls_prefix"] + "master.m3u8").decode("utf-8")
     base = f"/videos/{video_id}/stream/"
+    query_token = request.query_params.get("access_token")
+    suffix = f"?access_token={query_token}" if query_token else ""
     lines = []
     for line in text.splitlines():
         s = line.strip()
         if s and not s.startswith("#") and not s.startswith("http"):
-            lines.append(base + s)
+            lines.append(base + s + suffix)
         else:
             lines.append(line)
     with db.service_connection() as conn:
@@ -535,7 +537,8 @@ def master_playlist(
 def rendition_playlist(
     video_id: uuid.UUID,
     rendition: str,
-    user: AuthUser = Depends(get_current_user),
+    request: Request,
+    user: AuthUser = Depends(get_current_user_or_query_token),
     storage: Storage = Depends(get_storage),
 ) -> Response:
     """Rendition playlist with every segment line rewritten to a presigned URL."""
@@ -571,6 +574,26 @@ def rendition_playlist(
         media_type="application/vnd.apple.mpegurl",
         headers={"Cache-Control": "private, max-age=60"},
     )
+
+
+@router.get("/{video_id}/sprite-index")
+def sprite_index(
+    video_id: uuid.UUID,
+    user: AuthUser = Depends(get_current_user),
+    storage: Storage = Depends(get_storage),
+) -> dict[str, Any]:
+    with db.user_connection(user) as conn, conn.cursor() as cur:
+        cur.execute(
+            "select sprite_key from public.videos where id = %s and deleted_at is null", (video_id,)
+        )
+        row = cur.fetchone()
+    if row is None or not row["sprite_key"]:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Not found")
+    key = row["sprite_key"].rsplit("/", 1)[0] + "/sprite.json"
+    try:
+        return json.loads(storage.get_bytes(key).decode("utf-8"))
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Not found") from exc
 
 
 RENDITION_BITRATES = {"720p": 2_000_000, "480p": 1_000_000}

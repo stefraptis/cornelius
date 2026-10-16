@@ -125,6 +125,7 @@ async function request<T>(
     }
     throw new ApiError(response.status, detail);
   }
+  if (response.status === 204) return undefined as T;
   return (await response.json()) as T;
 }
 
@@ -143,6 +144,62 @@ export const api = {
   adminFeedback: (token: string) => request<FeedbackRow[]>("/admin/feedback", token),
   adminUpdateFeedback: (token: string, id: string, changes: { status?: string; admin_note?: string }) =>
     request<FeedbackRow>(`/admin/feedback/${id}`, token, { method: "PATCH", json: changes }),
+};
+
+export type VideoStatus = "uploading" | "processing" | "ready" | "analyzing" | "analyzed" | "failed";
+
+export type Video = {
+  id: string;
+  owner_user_id: string;
+  workspace_id: string;
+  procedure_code: string;
+  procedure_name: string | null;
+  title: string;
+  operation_date: string | null;
+  duration_s: number | null;
+  status: VideoStatus;
+  size_bytes: number | null;
+  analysis_requested: boolean;
+  last_error: string | null;
+  created_at: string;
+  updated_at: string;
+  poster_url: string | null;
+  is_owner: boolean;
+  permission: string | null;
+};
+
+export type StorageUsage = { used_bytes: number; quota_bytes: number; videos: number };
+
+export type VideoListParams = {
+  scope?: "mine" | "shared" | "all";
+  q?: string;
+  procedure?: string;
+  status?: string;
+  date_from?: string;
+  date_to?: string;
+  sort?: string;
+};
+
+export const videosApi = {
+  list: (token: string, params: VideoListParams = {}) => {
+    const qs = new URLSearchParams();
+    for (const [k, v] of Object.entries(params)) if (v) qs.set(k, String(v));
+    const suffix = qs.toString() ? `?${qs}` : "";
+    return request<Video[]>(`/videos${suffix}`, token);
+  },
+  get: (token: string, id: string) => request<Video>(`/videos/${id}`, token),
+  update: (token: string, id: string, changes: { title?: string; operation_date?: string | null }) =>
+    request<Video>(`/videos/${id}`, token, { method: "PATCH", json: changes }),
+  remove: (token: string, id: string) => request<void>(`/videos/${id}`, token, { method: "DELETE" }),
+  storage: (token: string) => request<StorageUsage>("/videos/storage", token),
+  asset: (token: string, id: string, kind: "poster" | "sprite" | "proxy" | "original") =>
+    request<{ url: string }>(`/videos/${id}/assets/${kind}`, token),
+  spriteIndex: (token: string, id: string) =>
+    request<{ interval_s: number; tile_width: number; tile_height: number; columns: number; count: number }>(
+      `/videos/${id}/sprite-index`,
+      token,
+    ),
+  streamUrl: (id: string) => `${env.apiBaseUrl}/videos/${id}/stream.m3u8`,
 };
 
 export type Consent = { terms_version: string | null; privacy_version: string | null; accepted_at: string | null };
