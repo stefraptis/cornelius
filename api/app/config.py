@@ -48,6 +48,9 @@ class Settings(BaseSettings):
     storage_presign_ttl_seconds: int = 7200
     storage_multipart_part_mb: int = 64
 
+    # Uploads
+    upload_max_gb: int = 20
+
     # Jobs
     jobs_poll_interval_s: int = 5
 
