@@ -30,10 +30,15 @@ def get_pool() -> ConnectionPool:
     global _pool
     if _pool is None:
         settings = get_settings()
+        # min_size=0: no connection is opened until the first request, so a
+        # wrong password does not make the pool hammer the server (Supabase's
+        # pooler blocks a client after repeated authentication failures).
         _pool = ConnectionPool(
             conninfo=settings.database_url,
-            min_size=1,
+            min_size=0,
             max_size=10,
+            timeout=15,
+            reconnect_timeout=60,
             kwargs={"row_factory": dict_row, "autocommit": False},
             open=True,
         )
@@ -87,7 +92,8 @@ def user_connection(user: AuthUser) -> Iterator[psycopg.Connection]:
 
 
 def ping() -> bool:
-    with service_connection() as conn, conn.cursor() as cur:
-        cur.execute("select 1 as ok")
-        row = cur.fetchone()
-        return bool(row and row["ok"] == 1)
+    """One direct, short-lived connection: fails fast with the server's real message."""
+    settings = get_settings()
+    with psycopg.connect(settings.database_url, connect_timeout=10) as conn:
+        row = conn.execute("select 1").fetchone()
+        return bool(row and row[0] == 1)

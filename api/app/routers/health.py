@@ -30,12 +30,17 @@ def health() -> dict[str, str]:
 
 @router.get("/health/db")
 def health_db(response: Response) -> dict[str, str]:
+    settings = get_settings()
     try:
         ok = db.ping()
-    except Exception:  # noqa: BLE001
+        reason = ""
+    except Exception as exc:  # noqa: BLE001
         log.exception("health.db_unreachable")
         ok = False
+        # The server's message helps in development (wrong password, host,
+        # SSL); it never includes the password itself.
+        reason = str(exc).splitlines()[0][:300] if not settings.is_production else ""
     if not ok:
         response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
-        return {"status": "unavailable"}
+        return {"status": "unavailable", "reason": reason}
     return {"status": "ok"}
