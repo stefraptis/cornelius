@@ -7,7 +7,6 @@ config, and Video_05.mp4 with its reference report.
 
 from __future__ import annotations
 
-import os
 from typing import Any
 
 import psycopg
@@ -24,9 +23,11 @@ def handle_narrate(job: dict[str, Any], conn: psycopg.Connection) -> None:
 
 
 if __name__ == "__main__":
+    from app.config import get_settings
+
     configure_logging()
     JobLoop(
-        database_url=os.environ["DATABASE_URL"],
+        database_url=get_settings().database_url,
         job_types=["analyze", "narrate"],
         handlers={"analyze": handle_analyze, "narrate": handle_narrate},
     ).run_forever()

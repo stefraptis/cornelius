@@ -36,6 +36,8 @@ For the frontend, create `web/.env.local` with the three `NEXT_PUBLIC_*` lines f
 
 ## 3. Run
 
+Three processes in development: the API, the web app, and the transcode worker (needs ffmpeg on PATH; on Windows: `winget install Gyan.FFmpeg`, then open a new terminal).
+
 ```bash
 # API
 cd api
@@ -48,7 +50,13 @@ uvicorn app.main:app --reload --port 8100
 cd web
 pnpm install
 pnpm dev                        # http://localhost:3100
+
+# Transcode worker (third terminal, from the repository root)
+pip install -e "api[workers]"
+python -m workers.transcode.main
 ```
+
+The worker reads `DATABASE_URL` and the `STORAGE_*` values from `.env` and `local.env` like the API.
 
 Sign up at http://localhost:3100/signup, confirm the email, sign in. Settings > Security sets up two-factor authentication.
 

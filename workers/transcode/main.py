@@ -211,9 +211,11 @@ def _config_from_env() -> OutOfBodyConfig:
 
 
 if __name__ == "__main__":
+    from app.config import get_settings
+
     configure_logging()
     JobLoop(
-        database_url=os.environ["DATABASE_URL"],
+        database_url=get_settings().database_url,
         job_types=["transcode", "purge"],
         handlers={"transcode": handle_transcode, "purge": handle_purge},
     ).run_forever()
