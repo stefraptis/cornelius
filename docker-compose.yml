@@ -1,0 +1,24 @@
+# Development stack. Supabase (auth + Postgres) and B2 are external services;
+# fill .env first. For tests without Supabase use `make db-local`.
+services:
+  api:
+    build: ./api
+    env_file: .env
+    ports: ["8000:8000"]
+  web:
+    build:
+      context: ./web
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+        NEXT_PUBLIC_API_BASE_URL: ${API_BASE_URL}
+        NEXT_PUBLIC_APP_NAME: ${APP_NAME}
+    env_file: .env
+    ports: ["3000:3000"]
+    depends_on: [api]
+  transcode:
+    build:
+      context: .
+      dockerfile: workers/transcode/Dockerfile
+    env_file: .env
+    depends_on: [api]

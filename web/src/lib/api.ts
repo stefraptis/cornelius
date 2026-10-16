@@ -1,0 +1,101 @@
+/**
+ * Typed client for the Cornelius API. The browser talks to the API only for
+ * metadata and permissions; video bytes never pass through it.
+ */
+import { env } from "@/lib/env";
+
+export class ApiError extends Error {
+  constructor(
+    public status: number,
+    message: string,
+  ) {
+    super(message);
+  }
+}
+
+export type Profile = {
+  id: string;
+  full_name: string;
+  title: string | null;
+  specialty: string | null;
+  locale: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type Workspace = {
+  id: string;
+  kind: "personal" | "team";
+  name: string;
+  team_id: string | null;
+  storage_quota_gb: number;
+};
+
+export type Me = {
+  user_id: string;
+  email: string | null;
+  second_factor: boolean;
+  profile: Profile;
+  workspaces: Workspace[];
+  teams: { team_id: string; team_name: string; org_id: string | null; role: string }[];
+  organizations: { org_id: string; org_name: string; role: string }[];
+};
+
+export type Label = { code: string; name: string; color: string; order: number };
+
+export type ModelVersion = {
+  id: string;
+  name: string;
+  architecture: string | null;
+  phase_labels: Label[];
+  tool_labels: Label[];
+  metrics: Record<string, unknown>;
+  thresholds: Record<string, unknown>;
+};
+
+export type Procedure = {
+  code: string;
+  name: string;
+  modality: string;
+  analysis_enabled: boolean;
+  model_version: ModelVersion | null;
+};
+
+async function request<T>(
+  path: string,
+  token: string,
+  init: RequestInit & { json?: unknown } = {},
+): Promise<T> {
+  const headers = new Headers(init.headers);
+  headers.set("Authorization", `Bearer ${token}`);
+  headers.set("Accept", "application/json");
+  let body = init.body;
+  if (init.json !== undefined) {
+    headers.set("Content-Type", "application/json");
+    body = JSON.stringify(init.json);
+  }
+  const response = await fetch(`${env.apiBaseUrl}${path}`, {
+    ...init,
+    headers,
+    body,
+    cache: "no-store",
+  });
+  if (!response.ok) {
+    let detail = response.statusText;
+    try {
+      const data = (await response.json()) as { detail?: unknown };
+      if (typeof data.detail === "string") detail = data.detail;
+    } catch {
+      // keep statusText
+    }
+    throw new ApiError(response.status, detail);
+  }
+  return (await response.json()) as T;
+}
+
+export const api = {
+  me: (token: string) => request<Me>("/me", token),
+  updateProfile: (token: string, changes: Partial<Pick<Profile, "full_name" | "title" | "specialty" | "locale">>) =>
+    request<Profile>("/me/profile", token, { method: "PATCH", json: changes }),
+  procedures: (token: string) => request<Procedure[]>("/procedures", token),
+};
