@@ -40,18 +40,45 @@ class AuthUser:
 
 
 class TokenVerifier:
-    """Verifies tokens for one Supabase project. Caches JWKS keys."""
+    """Verifies tokens for one Supabase project.
+
+    Supabase signs access tokens either with the project's legacy shared
+    secret (HS256) or, after the project switches to JWT signing keys, with an
+    asymmetric key published at /auth/v1/.well-known/jwks.json (ES256 or
+    RS256). The token header says which; both are supported, and a token of a
+    kind the API is not configured for produces a message that says what to
+    configure instead of a bare "invalid token".
+    """
+
+    ASYMMETRIC = ("ES256", "RS256")
 
     def __init__(self, settings: Settings):
         self._settings = settings
-        self._jwks: PyJWKClient | None = None
-        if not settings.supabase_jwt_secret:
-            jwks_url = settings.supabase_url.rstrip("/") + "/auth/v1/.well-known/jwks.json"
-            self._jwks = PyJWKClient(jwks_url, cache_keys=True, lifespan=3600)
+        jwks_url = settings.supabase_url.rstrip("/") + "/auth/v1/.well-known/jwks.json"
+        self._jwks = PyJWKClient(
+            jwks_url,
+            cache_keys=True,
+            lifespan=3600,
+            headers={"User-Agent": f"{settings.app_name}-api/0.1"},
+        )
 
     def verify(self, token: str) -> AuthUser:
         try:
-            if self._settings.supabase_jwt_secret:
+            header = jwt.get_unverified_header(token)
+        except jwt.PyJWTError as exc:
+            raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid token") from exc
+        alg = str(header.get("alg", ""))
+
+        try:
+            if alg == "HS256":
+                if not self._settings.supabase_jwt_secret:
+                    log.warning("auth.hs256_token_without_secret")
+                    raise HTTPException(
+                        status.HTTP_401_UNAUTHORIZED,
+                        "This Supabase project signs tokens with the legacy HS256 secret. "
+                        "Set SUPABASE_JWT_SECRET in the API environment, or switch the "
+                        "project to JWT signing keys (Project Settings > JWT Keys).",
+                    )
                 claims = jwt.decode(
                     token,
                     self._settings.supabase_jwt_secret,
@@ -59,20 +86,28 @@ class TokenVerifier:
                     audience="authenticated",
                     options={"require": ["exp", "sub"]},
                 )
-            else:
-                assert self._jwks is not None
+            elif alg in self.ASYMMETRIC:
                 signing_key = self._jwks.get_signing_key_from_jwt(token)
                 claims = jwt.decode(
                     token,
                     signing_key.key,
-                    algorithms=["ES256", "RS256"],
+                    algorithms=list(self.ASYMMETRIC),
                     audience="authenticated",
                     options={"require": ["exp", "sub"]},
+                )
+            else:
+                raise HTTPException(
+                    status.HTTP_401_UNAUTHORIZED, f"Unsupported token algorithm {alg}"
                 )
         except jwt.ExpiredSignatureError as exc:
             raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Session expired") from exc
         except jwt.PyJWTError as exc:
-            raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid token") from exc
+            # The reason is logged server side; in development it is also returned.
+            log.warning("auth.invalid_token", extra={"ctx_alg": alg, "ctx_reason": str(exc)})
+            detail = "Invalid token"
+            if not self._settings.is_production:
+                detail = f"Invalid token: {exc}"
+            raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail) from exc
 
         return claims_to_user(claims)
 
