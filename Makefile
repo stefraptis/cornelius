@@ -2,8 +2,8 @@
 
 help:
 	@echo "Targets:"
-	@echo "  web-dev     Run the Next.js app (http://localhost:3000)"
-	@echo "  api-dev     Run the FastAPI service (http://localhost:8000)"
+	@echo "  web-dev     Run the Next.js app (http://localhost:3100)"
+	@echo "  api-dev     Run the FastAPI service (http://localhost:8100)"
 	@echo "  db-local    Start a local PostgreSQL 16 cluster on port 54329 and apply migrations"
 	@echo "  db-migrate  Apply pending migrations to the local cluster"
 	@echo "  db-reset    Drop and recreate the local database, then migrate"
@@ -15,7 +15,7 @@ web-dev:
 	cd web && pnpm dev
 
 api-dev:
-	cd api && . .venv/bin/activate && uvicorn app.main:app --reload --port 8000
+	cd api && . .venv/bin/activate && uvicorn app.main:app --reload --port 8100
 
 db-local:
 	./scripts/db_local.sh start

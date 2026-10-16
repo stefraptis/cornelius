@@ -19,5 +19,5 @@ RUN pnpm install --frozen-lockfile --prod
 COPY --from=build /app/.next .next
 COPY --from=build /app/public public
 USER node
-EXPOSE 3000
+EXPOSE 3100
 CMD ["pnpm", "start"]

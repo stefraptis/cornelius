@@ -5,7 +5,7 @@ Next.js (App Router, TypeScript, Tailwind CSS v4) frontend.
 ```bash
 cp .env.example .env.local   # NEXT_PUBLIC_* values
 pnpm install
-pnpm dev                     # http://localhost:3000
+pnpm dev                     # http://localhost:3100
 pnpm lint && pnpm typecheck && pnpm test
 pnpm build
 ```

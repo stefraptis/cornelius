@@ -25,8 +25,8 @@ class Settings(BaseSettings):
 
     app_name: str = "Cornelius"
     app_env: str = Field(default="development", pattern="^(development|test|staging|production)$")
-    app_base_url: str = "http://localhost:3000"
-    api_base_url: str = "http://localhost:8000"
+    app_base_url: str = "http://localhost:3100"
+    api_base_url: str = "http://localhost:8100"
     log_level: str = "INFO"
     sentry_dsn: str | None = None
 
@@ -53,7 +53,7 @@ class Settings(BaseSettings):
     def cors_origins(self) -> list[str]:
         origins = {self.app_base_url}
         if self.app_env == "development":
-            origins |= {"http://localhost:3000", "http://127.0.0.1:3000"}
+            origins |= {"http://localhost:3100", "http://127.0.0.1:3100"}
         return sorted(origins)
 
     @property

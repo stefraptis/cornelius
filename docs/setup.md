@@ -10,7 +10,7 @@ The project is created in an EU region (Frankfurt). In the Supabase dashboard:
 2. **Project Settings > Database** (or the Connect button): copy the **Session pooler** URI. This is `DATABASE_URL` for the API and workers. Add `?sslmode=require` if it is not there.
 3. **Authentication > Sign In / Providers > Email**: keep Email enabled, with "Confirm email" on. Password sign-in and magic links both use this provider.
 4. **Authentication > Multi-Factor**: enable TOTP (authenticator app).
-5. **Authentication > URL Configuration**: Site URL `http://localhost:3000` for now; add `http://localhost:3000/auth/callback` to Redirect URLs. Repeat with the real domain later.
+5. **Authentication > URL Configuration**: Site URL `http://localhost:3100` for now; add `http://localhost:3100/auth/callback` to Redirect URLs. Repeat with the real domain later.
 6. **SQL Editor**: run, in order, `supabase/migrations/0001_accounts.sql`, `0002_videos_analysis.sql`, `0003_rls.sql`, then `supabase/seed/procedures.sql`. Each file is one transaction; if one fails, nothing from it is applied. (With the Supabase CLI: `supabase link --project-ref <ref>` then `supabase db push` and `supabase db seed`.)
 
 Then at the repository root:
@@ -38,15 +38,15 @@ cd api
 python -m venv .venv
 .venv\Scripts\activate          # Windows; on macOS/Linux: . .venv/bin/activate
 pip install -e ".[dev]"
-uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --reload --port 8100
 
 # Web (second terminal)
 cd web
 pnpm install
-pnpm dev                        # http://localhost:3000
+pnpm dev                        # http://localhost:3100
 ```
 
-Sign up at http://localhost:3000/signup, confirm the email, sign in. Settings > Security sets up two-factor authentication.
+Sign up at http://localhost:3100/signup, confirm the email, sign in. Settings > Security sets up two-factor authentication.
 
 ## 4. Tests
 

@@ -21,10 +21,12 @@ The build brief lives in the Claude project as "Surgical Video Platform: Build G
 
 Prerequisites: Node 22, pnpm 10, Python 3.11+, PostgreSQL 16 client and server (for local tests), ffmpeg.
 
+Ports: the web app uses 3100 and the API 8100, so Cornelius can run next to other local projects (bandeon uses 3000).
+
 ```bash
 cp .env.example .env            # fill in Supabase and B2 values
-make web-dev                    # Next.js on http://localhost:3000
-make api-dev                    # FastAPI on http://localhost:8000
+make web-dev                    # Next.js on http://localhost:3100
+make api-dev                    # FastAPI on http://localhost:8100
 make db-local                   # local Postgres with migrations applied (for tests)
 make test                       # api tests, RLS tests, web lint and unit tests
 ```
