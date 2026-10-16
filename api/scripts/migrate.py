@@ -1,7 +1,8 @@
 """Apply pending SQL migrations to the database in DATABASE_URL.
 
-    python scripts/migrate.py            # apply pending migrations and seeds
-    python scripts/migrate.py --status   # show what is applied and what is pending
+    python scripts/migrate.py                    # apply pending migrations and seeds
+    python scripts/migrate.py --status           # show what is applied and what is pending
+    python scripts/migrate.py --admin you@x.org  # make an existing account a platform admin
 
 Works against Supabase (session pooler URL) and against the local cluster.
 Applied versions are recorded in public.schema_migrations. If that table does
@@ -44,6 +45,7 @@ def main(argv: list[str]) -> int:
     settings = get_settings()
     url = settings.database_url
     status_only = "--status" in argv
+    admin_email = argv[argv.index("--admin") + 1] if "--admin" in argv else None
 
     with psycopg.connect(url, autocommit=True) as conn:
         conn.execute(
@@ -84,6 +86,20 @@ def main(argv: list[str]) -> int:
             print(f"Seeding {f.stem} ...", end=" ", flush=True)
             conn.execute(f.read_text(encoding="utf-8"))
             print("done")
+        if admin_email:
+            row = conn.execute(
+                "insert into public.platform_admins (user_id, note) "
+                "select id, 'added by migrate.py' from auth.users where lower(email) = lower(%s) "
+                "on conflict (user_id) do nothing returning user_id",
+                (admin_email,),
+            ).fetchone()
+            exists = conn.execute(
+                "select 1 from auth.users where lower(email) = lower(%s)", (admin_email,)
+            ).fetchone()
+            if not exists:
+                print(f"No account with email {admin_email}; sign up first.")
+                return 1
+            print(f"{admin_email} is a platform admin" + ("" if row else " (already was)"))
     return 0
 
 

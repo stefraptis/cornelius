@@ -54,11 +54,10 @@ Sign up at http://localhost:3100/signup, confirm the email, sign in. Settings > 
 
 ## 4. Platform admin
 
-The usage page (`/admin/usage`) and the feedback inbox are visible only to accounts listed in `public.platform_admins`. Add yourself once, in the SQL Editor:
+The usage page (`/admin/usage`) and the feedback inbox are visible only to accounts listed in `public.platform_admins`. After signing up, add yourself once from the `api` folder:
 
-```sql
-insert into public.platform_admins (user_id, note)
-select id, 'owner' from auth.users where email = 'you@example.org';
+```
+python scripts/migrate.py --admin you@example.org
 ```
 
 ## 5. Tests
