@@ -42,3 +42,11 @@ describe("t", () => {
     expect(json.includes("—")).toBe(false);
   });
 });
+
+describe("legal versions", () => {
+  it("are date-based and identical in both modules", async () => {
+    const { TERMS_VERSION, PRIVACY_VERSION } = await import("@/lib/legal-versions");
+    expect(TERMS_VERSION).toMatch(/^\d{4}-\d{2}-\d{2}\.\d+$/);
+    expect(PRIVACY_VERSION).toMatch(/^\d{4}-\d{2}-\d{2}\.\d+$/);
+  });
+});

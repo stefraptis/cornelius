@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 const ITEMS = [
   { href: "/settings", label: t("settings.profile") },
   { href: "/settings/security", label: t("settings.security") },
+  { href: "/settings/privacy", label: t("settings.privacy") },
 ];
 
 export function SettingsNav() {

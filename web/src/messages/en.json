@@ -50,7 +50,6 @@
     "updatePassword": "Update password",
     "passwordUpdated": "Password updated.",
     "consentUpload": "I understand that uploaded videos must contain no identifying patient data beyond the endoscopic view, and that I have the right to upload them.",
-    "termsAccept": "By creating an account you agree to the terms of use and the privacy notice.",
     "errors": {
       "invalidCredentials": "Email or password is incorrect.",
       "generic": "Something went wrong. Try again."
@@ -72,7 +71,9 @@
       "factorName": "Authenticator app",
       "invalidCode": "That code is not valid. Try the next one from your app.",
       "requiredForAdmins": "Required for hospital admins"
-    }
+    },
+    "acceptTerms": "I have read and agree to the {terms} and the {privacy}.",
+    "acceptTermsRequired": "You need to accept the terms to create an account."
   },
   "library": {
     "title": "Library",
@@ -104,7 +105,20 @@
     "save": "Save changes",
     "accountEmail": "Account email",
     "memberships": "Memberships",
-    "noMemberships": "You are not a member of any team or hospital yet."
+    "noMemberships": "You are not a member of any team or hospital yet.",
+    "privacy": "Privacy and data",
+    "privacyIntro": "What we hold about you, and the two things you can do with it at any time.",
+    "exportTitle": "Download my data",
+    "exportBody": "A JSON file with your profile, memberships, the list of your videos, consents, feedback, usage events and audit trail. Videos themselves are downloaded from the library.",
+    "exportButton": "Download data",
+    "deleteTitle": "Delete my account",
+    "deleteBody": "Removes your account, profile, memberships, videos, analyses, comments and feedback. Videos and reports in storage are purged within 30 days, backups included. This cannot be undone.",
+    "deleteConfirmLabel": "Type your account email to confirm",
+    "deleteButton": "Delete account",
+    "deleteDone": "Your account was deleted.",
+    "consentTitle": "Accepted terms",
+    "consentBody": "Terms of Use {terms}, Privacy Notice {privacy}, accepted on {date}.",
+    "consentNone": "No consent recorded yet."
   },
   "aboutModel": {
     "title": "About the model",
@@ -144,7 +158,8 @@
     "failed": "Failed"
   },
   "footer": {
-    "disclaimer": "Events and analyses are for post-operative review, education, and research only. Not for real-time clinical guidance."
+    "disclaimer": "Events and analyses are for post-operative review, education, and research only. Not for real-time clinical guidance.",
+    "legal": "Legal"
   },
   "feedback": {
     "button": "Feedback",
@@ -193,5 +208,15 @@
       "done": "Done",
       "closed": "Closed"
     }
+  },
+  "legal": {
+    "terms": "Terms of Use",
+    "privacy": "Privacy Notice",
+    "cookies": "Cookie Notice",
+    "subprocessors": "Sub-processors",
+    "reconsentTitle": "Updated terms",
+    "reconsentBody": "The {docs} changed since you last accepted them. Please read the new version and accept it to continue.",
+    "reconsentAccept": "I accept the updated terms",
+    "reconsentButton": "Accept and continue"
   }
 }

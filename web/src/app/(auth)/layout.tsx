@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { LegalLinks } from "@/components/shell/legal-links";
 import { Logo } from "@/components/shell/logo";
 import { t } from "@/lib/i18n";
 
@@ -15,8 +16,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <main className="flex flex-1 items-start justify-center px-4 py-12 sm:py-20">
         <div className="w-full max-w-sm">{children}</div>
       </main>
-      <footer className="border-t border-border px-6 py-4 text-xs text-text-muted">
-        {t("app.positioning")}
+      <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-6 py-4 text-xs text-text-muted">
+        <span>{t("app.positioning")}</span>
+        <LegalLinks />
       </footer>
     </div>
   );

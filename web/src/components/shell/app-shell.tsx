@@ -16,6 +16,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { FeedbackButton } from "@/components/shell/feedback-button";
+import { LegalLinks } from "@/components/shell/legal-links";
 import { Logo } from "@/components/shell/logo";
 import { ThemeToggle } from "@/components/shell/theme-toggle";
 import { UsageTracker } from "@/components/shell/usage-tracker";
@@ -160,7 +161,10 @@ export function AppShell({
         </header>
         <main className="mx-auto w-full max-w-[1440px] flex-1 px-6 py-6">{children}</main>
         <UsageTracker />
-        <footer className="border-t border-border px-6 py-3 text-xs text-text-muted">{t("footer.disclaimer")}</footer>
+        <footer className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-6 py-3 text-xs text-text-muted">
+          <span>{t("footer.disclaimer")}</span>
+          <LegalLinks />
+        </footer>
       </div>
     </div>
   );

@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Field, Input } from "@/components/ui/input";
+import { Checkbox, Field, Input } from "@/components/ui/input";
 import { t } from "@/lib/i18n";
+import { PRIVACY_VERSION, TERMS_VERSION } from "@/lib/legal-versions";
 import { createClient } from "@/lib/supabase/client";
 
 const MIN_PASSWORD = 10;
@@ -21,6 +22,8 @@ export function SignupForm() {
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
+  const [accepted, setAccepted] = useState(false);
+  const [acceptError, setAcceptError] = useState<string | null>(null);
 
   // Validated live: the message appears once the field has been used and
   // disappears the moment the password is long enough.
@@ -34,12 +37,22 @@ export function SignupForm() {
       setPasswordTouched(true);
       return;
     }
+    if (!accepted) {
+      setAcceptError(t("auth.acceptTermsRequired"));
+      return;
+    }
     setBusy(true);
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { full_name: fullName.trim(), locale: "en" },
+        data: {
+          full_name: fullName.trim(),
+          locale: "en",
+          accepted_terms_version: TERMS_VERSION,
+          accepted_privacy_version: PRIVACY_VERSION,
+          accepted_at: new Date().toISOString(),
+        },
         emailRedirectTo: `${window.location.origin}/auth/callback?next=/library`,
       },
     });
@@ -115,10 +128,27 @@ export function SignupForm() {
             aria-invalid={passwordError || error ? true : undefined}
           />
         </Field>
+        <label className="flex items-start gap-2 text-sm">
+          <Checkbox
+            checked={accepted}
+            onChange={(e) => {
+              setAccepted(e.target.checked);
+              if (e.target.checked) setAcceptError(null);
+            }}
+            aria-invalid={acceptError ? true : undefined}
+          />
+          <span>
+            <ConsentSentence />
+          </span>
+        </label>
+        {acceptError ? (
+          <p className="-mt-2 text-xs text-danger" role="alert">
+            {acceptError}
+          </p>
+        ) : null}
         <Button type="submit" loading={busy} className="mt-2 w-full">
           {t("auth.signUp")}
         </Button>
-        <p className="text-xs text-text-muted">{t("auth.termsAccept")}</p>
       </form>
 
       <p className="mt-8 text-center text-sm text-text-muted">
@@ -128,5 +158,29 @@ export function SignupForm() {
         </Link>
       </p>
     </div>
+  );
+}
+
+/** "I have read and agree to the {terms} and the {privacy}." with links. */
+function ConsentSentence() {
+  const parts = t("auth.acceptTerms").split(/(\{terms\}|\{privacy\})/);
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (part === "{terms}")
+          return (
+            <Link key={i} href="/legal/terms" target="_blank" className="text-accent hover:underline">
+              {t("legal.terms")}
+            </Link>
+          );
+        if (part === "{privacy}")
+          return (
+            <Link key={i} href="/legal/privacy" target="_blank" className="text-accent hover:underline">
+              {t("legal.privacy")}
+            </Link>
+          );
+        return <span key={i}>{part}</span>;
+      })}
+    </>
   );
 }

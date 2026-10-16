@@ -145,4 +145,15 @@ export const api = {
     request<FeedbackRow>(`/admin/feedback/${id}`, token, { method: "PATCH", json: changes }),
 };
 
+export type Consent = { terms_version: string | null; privacy_version: string | null; accepted_at: string | null };
+
+export const privacyApi = {
+  consent: (token: string) => request<Consent>("/me/consent", token),
+  accept: (token: string, terms_version: string, privacy_version: string) =>
+    request<Consent>("/me/consent", token, { method: "POST", json: { terms_version, privacy_version } }),
+  deleteAccount: (token: string, confirm_email: string) =>
+    request<{ status: string }>("/me/delete", token, { method: "POST", json: { confirm_email } }),
+  exportUrl: () => `${env.apiBaseUrl}/me/export`,
+};
+
 export const APP_VERSION = "0.1.0";
