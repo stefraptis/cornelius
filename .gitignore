@@ -31,3 +31,7 @@ build/
 .idea/
 .vscode/
 .DS_Store
+
+# One-time local setup helpers (contain keys until run)
+_copy-me/
+setup-local.ps1
