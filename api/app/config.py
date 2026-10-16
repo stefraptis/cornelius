@@ -18,7 +18,9 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=(REPO_ROOT / ".env", Path(".env")),
+        # Later files override earlier ones. local.env exists for tooling that
+        # cannot write dotfiles; it is git-ignored like .env.
+        env_file=(REPO_ROOT / ".env", REPO_ROOT / "local.env", Path(".env")),
         env_file_encoding="utf-8",
         extra="ignore",
     )
