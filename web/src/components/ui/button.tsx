@@ -1,4 +1,4 @@
-import { Slot } from "@radix-ui/react-slot";
+import { Slot, Slottable } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { Loader2 } from "lucide-react";
 import * as React from "react";
@@ -46,7 +46,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {loading ? <Loader2 className="animate-spin" aria-hidden /> : null}
-        {children}
+        {/* Slottable lets asChild wrap a single element (e.g. a Link) even with the spinner alongside. */}
+        <Slottable>{children}</Slottable>
       </Comp>
     );
   },
